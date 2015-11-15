@@ -8,13 +8,7 @@
 
 using namespace std;
 
-const int MIN_NOTATION = 2;
-const int MAX_NOTATION = 36;
-
-int ParseNotation(const char *pNotationStr);
-
-int StringToInt(const char str[], int radix, bool & wasError);
-// void IntToString(int n, int radix, char str[], int bufferLength, bool & wasError);
+int ParseRadix(const char *pRadixStr);
 
 int main(int argc, char* argv[])
 {
@@ -26,42 +20,34 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	int srcNotation = ParseNotation(argv[1]);
-	if (!srcNotation)
+	int srcRadix = ParseRadix(argv[1]);
+	if (!srcRadix)
 	{
 		return 1;
 	}
 
-	int destNotation = ParseNotation(argv[2]);
-	if (!destNotation)
+	int destRadix = ParseRadix(argv[2]);
+	if (!destRadix)
 	{
 		return 1;
 	}
-
-	char *pNumStr = argv[3];
-
-	// StringToInt
-	// IntToString
+	
 
     return 0;
 }
 
-int ParseNotation(const char *pNotationStr)
+int ParseRadix(const char *pRadixStr)
 {
-	int notation = atoi(pNotationStr);
-	bool isValid = (notation >= MIN_NOTATION) && (notation <= MAX_NOTATION);
+	const int MIN_RADIX = 2;
+	const int MAX_RADIX = 36;
+
+	int radix = atoi(pRadixStr);
+	bool isValid = (radix >= MIN_RADIX) && (radix <= MAX_RADIX);
 	if (!isValid)
 	{
-		cout << "Notation value \"" << pNotationStr << "\" is invalid." << endl
-			 << "It must be between " << MIN_NOTATION << " and " << MAX_NOTATION << endl;
-
-		notation = 0;
+		cout << "Radix value \"" << pRadixStr << "\" is invalid." << endl
+			 << "It must be between " << MIN_RADIX << " and " << MAX_RADIX << endl;
 	}
 
-	return notation;
-}
-
-int StringToInt(const char str[], int radix, bool & wasError)
-{
-
+	return isValid ? radix : 0;
 }
