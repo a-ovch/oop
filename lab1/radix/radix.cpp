@@ -3,10 +3,11 @@
 
 #include "stdafx.h"
 
+#include "SafeMath.h"
+
 #include <iostream>
 #include <memory>
 #include <stdlib.h>
-#include <math.h>
 
 using namespace std;
 
@@ -14,8 +15,8 @@ int ParseRadix(const char *pRadixStr);
 int GetOutputBufferSize();
 char GetCharOffset(bool isCharDigit);
 
-int CharToInt(char ch, bool & wasError);
-char IntToChar(int num);
+int RadixCharToInt(char ch, int radix, bool & wasError);
+char IntToRadixChar(int num);
 
 int StringToInt(const char str[], int radix, bool & wasError);
 void IntToString(int n, int radix, char str[], int bufferLength, bool & wasError);
@@ -46,7 +47,6 @@ int main(int argc, char* argv[])
 	
 	bool wasError = false;
 	int decimalInt = StringToInt(argv[3], srcRadix, wasError);
-
 	if (wasError)
 	{
 		return 1;
@@ -55,14 +55,18 @@ int main(int argc, char* argv[])
 	int bufferSize = GetOutputBufferSize();
 	auto convertedNumStr = make_unique<char[]>(bufferSize);
 
-	IntToString(decimalInt, destRadix, convertedNumStr.get(), bufferSize, wasError);
+	IntToString(abs(decimalInt), destRadix, convertedNumStr.get(), bufferSize, wasError);
 	
 	if (wasError)
 	{
 		return 1;
 	}
 
-	cout << "Converted num " << convertedNumStr.get() << endl;
+	if (decimalInt < 0)
+	{
+		cout << "-";
+	}
+	cout << convertedNumStr.get() << endl;
 
     return 0;
 }
@@ -96,7 +100,7 @@ char GetCharOffset(bool isCharDigit)
 	return isCharDigit ? DIGIT_OFFSET : LETTER_OFFSET;
 }
 
-int CharToInt(char ch, bool & wasError)
+int RadixCharToInt(char ch, int radix, bool & wasError)
 {
 	bool isDigit = ((ch >= '0') && (ch <= '9'));
 	bool isLetter = ((ch >= 'A') && (ch <= 'Z'));
@@ -109,10 +113,19 @@ int CharToInt(char ch, bool & wasError)
 	}
 
 	char offset = GetCharOffset(isDigit);
-	return static_cast<int>(ch - offset);
+	int decimalNumber = static_cast<int>(ch - offset);
+	if (decimalNumber >= radix)
+	{
+		wasError = true;
+		cout << "Illegal character \"" << ch << "\" for radix " << radix << endl;
+
+		return 0;
+	}
+
+	return decimalNumber;
 }
 
-char IntToChar(int num)
+char IntToRadixChar(int num)
 {
 	bool isDigit = (num <= 9);
 	char offset = GetCharOffset(isDigit);
@@ -121,32 +134,45 @@ char IntToChar(int num)
 
 int StringToInt(const char str[], int radix, bool & wasError)
 {
-	size_t strLen = strlen(str);
-
 	int decimalNum = 0;
-	for (size_t i = 0; i < strLen; i++)
+	bool isNegative = false;
+
+	int strLen = static_cast<int>(strlen(str));
+	for (int i = 0, power = (strLen - 1); i < strLen; i++, power--)
 	{
 		char ch = str[i];
-		int currentDigit = CharToInt(ch, wasError);
+		if ((i == 0) && (ch == '-'))
+		{
+			isNegative = true;
+			continue;
+		}
+
+		int currentDigit = RadixCharToInt(ch, radix, wasError);
 		if (wasError)
 		{
 			return 0;
 		}
 
-		if (currentDigit >= radix)
+		int factor = SafePow(radix, power, wasError);
+		if (wasError)
 		{
-			wasError = true;
-			cout << "Illegal character \"" << ch << "\" for radix " << radix << endl;
-
+			return 0;
+		}
+		
+		int addition = SafeMultiply(currentDigit, factor, wasError);
+		if (wasError)
+		{
 			return 0;
 		}
 
-		int power = static_cast<int>(strLen - i - 1);
-		int factor = static_cast<int>(pow(radix, power));
-		decimalNum += currentDigit * factor;
+		decimalNum = SafeAddition(decimalNum, addition, wasError);
+		if (wasError)
+		{
+			return 0;
+		}
 	}
 
-	return decimalNum;
+	return isNegative ? -decimalNum : decimalNum;
 }
 
 void IntToString(int n, int radix, char str[], int bufferLength, bool & wasError)
@@ -155,7 +181,7 @@ void IntToString(int n, int radix, char str[], int bufferLength, bool & wasError
 	while (n >= radix)
 	{
 		int decimalDigit = (n % radix);
-		char charDigit = IntToChar(decimalDigit);
+		char charDigit = IntToRadixChar(decimalDigit);
 		str[i] = charDigit;
 
 		n = (n / radix);
@@ -169,7 +195,7 @@ void IntToString(int n, int radix, char str[], int bufferLength, bool & wasError
 		}
 	}
 
-	str[i] = IntToChar(n);
+	str[i] = IntToRadixChar(n);
 	str[i + 1] = '\0';
 
 	ReverseBuffer(str, (i + 1));
