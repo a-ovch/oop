@@ -6,22 +6,21 @@
 #include "SafeMath.h"
 
 #include <iostream>
-#include <memory>
+#include <string>
 #include <stdlib.h>
 
 using namespace std;
 
 int ParseRadix(const char *pRadixStr);
-int GetOutputBufferSize();
 char GetCharOffset(bool isCharDigit);
 
 int RadixCharToInt(char ch, int radix, bool & wasError);
 char IntToRadixChar(int num);
 
 int StringToInt(const char str[], int radix, bool & wasError);
-void IntToString(int n, int radix, char str[], int bufferLength, bool & wasError);
+string IntToString(int n, int radix);
 
-void ReverseBuffer(char buffer[], int bufferLength);
+string ReverseString(string const &str);
 
 int main(int argc, char* argv[])
 {
@@ -52,21 +51,8 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	int bufferSize = GetOutputBufferSize();
-	auto convertedNumStr = make_unique<char[]>(bufferSize);
-
-	IntToString(abs(decimalInt), destRadix, convertedNumStr.get(), bufferSize, wasError);
-	
-	if (wasError)
-	{
-		return 1;
-	}
-
-	if (decimalInt < 0)
-	{
-		cout << "-";
-	}
-	cout << convertedNumStr.get() << endl;
+	string convertedNumStr = IntToString(decimalInt, destRadix);
+	cout << convertedNumStr << endl;
 
     return 0;
 }
@@ -85,12 +71,6 @@ int ParseRadix(const char *pRadixStr)
 	}
 
 	return isValid ? radix : 0;
-}
-
-int GetOutputBufferSize()
-{
-	const int BITS_IN_BYTE = 8;
-	return sizeof(int) * BITS_IN_BYTE;
 }
 
 char GetCharOffset(bool isCharDigit)
@@ -175,39 +155,37 @@ int StringToInt(const char str[], int radix, bool & wasError)
 	return isNegative ? -decimalNum : decimalNum;
 }
 
-void IntToString(int n, int radix, char str[], int bufferLength, bool & wasError)
+string IntToString(int n, int radix)
 {
-	int i = 0;
+	bool isNegative = (n < 0);
+	n = abs(n);
+
+	string result("");
 	while (n >= radix)
 	{
 		int decimalDigit = (n % radix);
-		char charDigit = IntToRadixChar(decimalDigit);
-		str[i] = charDigit;
+		result += IntToRadixChar(decimalDigit);;
 
 		n = (n / radix);
-		i++;
-
-		if (i == (bufferLength - 1))
-		{
-			wasError = true;
-			cout << "Size of buffer " << bufferLength << " is inadequate to write output number." << endl;
-			return;
-		}
 	}
 
-	str[i] = IntToRadixChar(n);
-	str[i + 1] = '\0';
+	result += IntToRadixChar(n);
 
-	ReverseBuffer(str, (i + 1));
+	if (isNegative)
+	{
+		result += "-";
+	}
+
+	return ReverseString(result);
 }
 
-void ReverseBuffer(char buffer[], int bufferLength)
+string ReverseString(string const &str)
 {
-	char tmp;
-	for (int i = 0, j = (bufferLength - 1); i < j; i++, j--)
+	string reversedStr("");
+	for (string::const_reverse_iterator rit = str.rbegin(); rit != str.rend(); rit++)
 	{
-		tmp = buffer[j];
-		buffer[j] = buffer[i];
-		buffer[i] = tmp;
+		reversedStr += *rit;
 	}
+
+	return reversedStr;
 }
