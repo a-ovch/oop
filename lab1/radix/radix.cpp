@@ -121,28 +121,30 @@ int StringToInt(const char str[], int radix)
 		}
 
 		int currentDigit = RadixCharToInt(ch, radix);
+		if (isNegative)
+		{
+			currentDigit = -currentDigit;
+		}
 		result = SafeMultiply(result, radix);
 		result = SafeAddition(result, currentDigit);
 	}
 
-	return isNegative ? -result : result;
+	return result;
 }
 
 string IntToString(int n, int radix)
 {
 	bool isNegative = (n < 0);
-	n = abs(n);
 
 	string result("");
-	while (n >= radix)
+	do
 	{
-		int decimalDigit = (n % radix);
-		result += IntToRadixChar(decimalDigit);;
+		int decimalDigit = abs(n % radix);
+		result += IntToRadixChar(decimalDigit);
 
 		n = (n / radix);
-	}
-
-	result += IntToRadixChar(n);
+	} 
+	while (n);
 
 	if (isNegative)
 	{

@@ -9,10 +9,9 @@
 using namespace std;
 
 int SafeAddition(int a, int b)
-{
-	assert(b >= 0);
-
-	if (a > (INT_MAX - b))
+ {
+	bool isOverflow = (b > 0) ? (a > (INT_MAX - b)) : (a < (INT_MIN - b));
+	if (isOverflow)
 	{
 		throw exception("Overflow when adding detected.");
 	}

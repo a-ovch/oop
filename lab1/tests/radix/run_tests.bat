@@ -55,6 +55,21 @@ IF ERRORLEVEL 1 GOTO error
 FC output.txt output5.txt
 IF ERRORLEVEL 1 GOTO error
 
+echo Test convertion 2147483647(10) == 2147483647(10)
+radix.exe 10 10 2147483647 > output.txt
+IF ERRORLEVEL 1 GOTO error
+
+FC output.txt output6.txt
+IF ERRORLEVEL 1 GOTO error
+
+echo Test convertion -2147483648(10) == -2147483648(10)
+radix.exe 10 10 -2147483648 > output.txt
+IF ERRORLEVEL 1 GOTO error
+
+FC output.txt output7.txt
+IF ERRORLEVEL 1 GOTO error
+
+
 echo All tests successfully passed!
 GOTO clean
 
