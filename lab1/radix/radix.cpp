@@ -37,14 +37,9 @@ int main(int argc, char* argv[])
 		int srcRadix = ParseRadix(argv[1]);
 		int destRadix = ParseRadix(argv[2]);
 
-		bool wasError = false;
 		int decimalInt = StringToInt(argv[3], srcRadix);
-		if (wasError)
-		{
-			return 1;
-		}
-
 		string convertedNumStr = IntToString(decimalInt, destRadix);
+
 		cout << convertedNumStr << endl;
 	}
 	catch (exception e)
