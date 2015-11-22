@@ -4,47 +4,38 @@
 
 #include <limits.h>
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 
-int SafeAddition(int a, int b, bool & wasOverflow)
+int SafeAddition(int a, int b)
 {
+	assert(b >= 0);
+
 	if (a > (INT_MAX - b))
 	{
-		wasOverflow = true;
-
-		cout << "Overflow detected: " << a << " + " << b << endl;
-
-		return 0;
+		throw exception("Overflow when adding detected.");
 	}
 
 	return (a + b);
 }
 
-int SafeMultiply(int a, int b, bool & wasOverflow)
+int SafeMultiply(int a, int b)
 {
 	if (b && (a > (INT_MAX / b)))
 	{
-		wasOverflow = true;
-
-		cout << "Overflow detected: " << a << " * " << b << endl;
-
-		return 0;
+		throw exception("Overflow when multipliing detected.");
 	}
 
 	return (a * b);
 }
 
-int SafePow(int base, int exponent, bool & wasOverflow)
+int SafePow(int base, int exponent)
 {
 	int result = 1;
 	for (int i = 0; i < exponent; i++)
 	{
-		result = SafeMultiply(result, base, wasOverflow);
-		if (wasOverflow)
-		{
-			return 0;
-		}
+		result = SafeMultiply(result, base);
 	}
 
 	return result;

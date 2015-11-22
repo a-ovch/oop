@@ -1,5 +1,5 @@
 #pragma once
 
-int SafeAddition(int a, int b, bool & wasOverflow);
-int SafeMultiply(int a, int b, bool & wasOverflow);
-int SafePow(int base, int exponent, bool & wasOverflow);
+int SafeAddition(int a, int b);
+int SafeMultiply(int a, int b);
+int SafePow(int base, int exponent);

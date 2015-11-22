@@ -7,17 +7,17 @@
 
 #include <iostream>
 #include <string>
-#include <stdlib.h>
+#include <boost/format.hpp>
 
 using namespace std;
 
 int ParseRadix(const char *pRadixStr);
 char GetCharOffset(bool isCharDigit);
 
-int RadixCharToInt(char ch, int radix, bool & wasError);
+int RadixCharToInt(char ch, int radix);
 char IntToRadixChar(int num);
 
-int StringToInt(const char str[], int radix, bool & wasError);
+int StringToInt(const char str[], int radix);
 string IntToString(int n, int radix);
 
 string ReverseString(string const &str);
@@ -32,27 +32,26 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	int srcRadix = ParseRadix(argv[1]);
-	if (!srcRadix)
+	try
 	{
-		return 1;
-	}
+		int srcRadix = ParseRadix(argv[1]);
+		int destRadix = ParseRadix(argv[2]);
 
-	int destRadix = ParseRadix(argv[2]);
-	if (!destRadix)
-	{
-		return 1;
-	}
-	
-	bool wasError = false;
-	int decimalInt = StringToInt(argv[3], srcRadix, wasError);
-	if (wasError)
-	{
-		return 1;
-	}
+		bool wasError = false;
+		int decimalInt = StringToInt(argv[3], srcRadix);
+		if (wasError)
+		{
+			return 1;
+		}
 
-	string convertedNumStr = IntToString(decimalInt, destRadix);
-	cout << convertedNumStr << endl;
+		string convertedNumStr = IntToString(decimalInt, destRadix);
+		cout << convertedNumStr << endl;
+	}
+	catch (exception e)
+	{
+		cout << "Error: " << e.what() << endl;
+		return 1;
+	}
 
     return 0;
 }
@@ -66,11 +65,12 @@ int ParseRadix(const char *pRadixStr)
 	bool isValid = (radix >= MIN_RADIX) && (radix <= MAX_RADIX);
 	if (!isValid)
 	{
-		cout << "Radix value \"" << pRadixStr << "\" is invalid." << endl
-			 << "It must be between " << MIN_RADIX << " and " << MAX_RADIX << endl;
+		boost::format errorPattern("Radix value \"%1%\" is invalid.\nIt must be between %2% and %3%");
+		errorPattern % pRadixStr % MIN_RADIX % MAX_RADIX;
+		throw exception(errorPattern.str().c_str());
 	}
 
-	return isValid ? radix : 0;
+	return radix;
 }
 
 char GetCharOffset(bool isCharDigit)
@@ -80,26 +80,24 @@ char GetCharOffset(bool isCharDigit)
 	return isCharDigit ? DIGIT_OFFSET : LETTER_OFFSET;
 }
 
-int RadixCharToInt(char ch, int radix, bool & wasError)
+int RadixCharToInt(char ch, int radix)
 {
 	bool isDigit = ((ch >= '0') && (ch <= '9'));
 	bool isLetter = ((ch >= 'A') && (ch <= 'Z'));
 	if (!(isDigit || isLetter))
 	{
-		wasError = true;
-		cout << "Illegal symbol \"" << ch << "\" was detected." << endl;
-
-		return 0;
+		boost::format errorPattern("Illegal symbol \"%1%\" was detected.");
+		errorPattern % ch;
+		throw exception(errorPattern.str().c_str());
 	}
 
 	char offset = GetCharOffset(isDigit);
 	int decimalNumber = static_cast<int>(ch - offset);
 	if (decimalNumber >= radix)
-	{
-		wasError = true;
-		cout << "Illegal character \"" << ch << "\" for radix " << radix << endl;
-
-		return 0;
+	{	
+		boost::format errorPattern("Illegal character \"%1%\" for radix \"%2%\"");
+		errorPattern % ch % radix;
+		throw exception(errorPattern.str().c_str());
 	}
 
 	return decimalNumber;
@@ -112,7 +110,7 @@ char IntToRadixChar(int num)
 	return static_cast<char>(num + offset);
 }
 
-int StringToInt(const char str[], int radix, bool & wasError)
+int StringToInt(const char str[], int radix)
 {
 	int decimalNum = 0;
 	bool isNegative = false;
@@ -127,29 +125,11 @@ int StringToInt(const char str[], int radix, bool & wasError)
 			continue;
 		}
 
-		int currentDigit = RadixCharToInt(ch, radix, wasError);
-		if (wasError)
-		{
-			return 0;
-		}
+		int currentDigit = RadixCharToInt(ch, radix);
 
-		int factor = SafePow(radix, power, wasError);
-		if (wasError)
-		{
-			return 0;
-		}
-		
-		int addition = SafeMultiply(currentDigit, factor, wasError);
-		if (wasError)
-		{
-			return 0;
-		}
-
-		decimalNum = SafeAddition(decimalNum, addition, wasError);
-		if (wasError)
-		{
-			return 0;
-		}
+		int factor = SafePow(radix, power);
+		int addition = SafeMultiply(currentDigit, factor);
+		decimalNum = SafeAddition(decimalNum, addition);
 	}
 
 	return isNegative ? -decimalNum : decimalNum;
@@ -182,7 +162,7 @@ string IntToString(int n, int radix)
 string ReverseString(string const &str)
 {
 	string reversedStr("");
-	for (string::const_reverse_iterator rit = str.rbegin(); rit != str.rend(); rit++)
+	for (auto rit = str.rbegin(); rit != str.rend(); rit++)
 	{
 		reversedStr += *rit;
 	}
