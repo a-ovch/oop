@@ -112,11 +112,11 @@ char IntToRadixChar(int num)
 
 int StringToInt(const char str[], int radix)
 {
-	int decimalNum = 0;
+	int result = 0;
 	bool isNegative = false;
 
-	int strLen = static_cast<int>(strlen(str));
-	for (int i = 0, power = (strLen - 1); i < strLen; i++, power--)
+	size_t strLen = strlen(str);
+	for (size_t i = 0; i < strLen; i++)
 	{
 		char ch = str[i];
 		if ((i == 0) && (ch == '-'))
@@ -126,13 +126,11 @@ int StringToInt(const char str[], int radix)
 		}
 
 		int currentDigit = RadixCharToInt(ch, radix);
-
-		int factor = SafePow(radix, power);
-		int addition = SafeMultiply(currentDigit, factor);
-		decimalNum = SafeAddition(decimalNum, addition);
+		result = SafeMultiply(result, radix);
+		result = SafeAddition(result, currentDigit);
 	}
 
-	return isNegative ? -decimalNum : decimalNum;
+	return isNegative ? -result : result;
 }
 
 string IntToString(int n, int radix)

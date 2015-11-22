@@ -29,14 +29,3 @@ int SafeMultiply(int a, int b)
 
 	return (a * b);
 }
-
-int SafePow(int base, int exponent)
-{
-	int result = 1;
-	for (int i = 0; i < exponent; i++)
-	{
-		result = SafeMultiply(result, base);
-	}
-
-	return result;
-}
