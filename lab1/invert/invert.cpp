@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
 	Matrix3 inverseMatrix;
 	bool inverseMatrixIsFound = CalculateInverseMatrix(sourceMatrix, inverseMatrix);
-	if (!inverseMatrixIsFound)
+	if (inverseMatrixIsFound)
 	{
 		PrintMatrix(inverseMatrix, PRINT_PRECISION);
 	}
