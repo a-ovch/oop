@@ -181,8 +181,8 @@ double CalculateMinor(Matrix3 const & matrix, int8_t row, int8_t column)
 	}
 
 	double minor = CalculateDeterminant(minorMatrix);
-
-	return ((row + column) % 2) ? -minor : minor;
+	bool minorHasNegativeSign = minor && ((row + column) % 2);
+	return minorHasNegativeSign ? -minor : minor;
 }
 
 void CalculateMinorMatrix(Matrix3 const & matrix, Matrix3 & minorMatrix)
